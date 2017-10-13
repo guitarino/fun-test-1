@@ -2,6 +2,27 @@
   white-space: pre-wrap;
 }
 
-.highlighted {
+.highlighted.baky {
+  background-color: brown;
+}
+
+.highlighted.kola {
   background-color: yellowgreen;
+}
+
+[aria-label] {
+  position: relative;
+  display: inline-block;
+}
+
+[aria-label]:hover:after {
+  content: attr(aria-label);
+  position: absolute;
+  display: block;
+  margin-top: 0.8em;
+  background: #FFF;
+  padding: 4px;
+  border-radius: 3px;
+  border: 1px solid goldenrod;
+  z-index: 1;
 }

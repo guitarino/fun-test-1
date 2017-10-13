@@ -1,6 +1,8 @@
 var text, tokenPositions;
 var textElement;
 
+var vowels = /[aeiou]/i;
+
 document.addEventListener('DOMContentLoaded', function() {
   getText();
   getTokenPositions();
@@ -34,9 +36,16 @@ function refreshData() {
         textElement.appendChild(child);
       }
       else {
+        var isBaky = vowels.test(fragment[0]);
         var highlighted = document.createElement('span');
-        highlighted.className = 'highlighted';
+        highlighted.className = 'highlighted ' + (isBaky ? 'baky' : 'kola');
         highlighted.setAttribute('data-tokenPosition', count);
+        if (isBaky) {
+          highlighted.setAttribute('aria-label', 'Baky');
+        }
+        else {
+          highlighted.setAttribute('aria-label', 'Kola');
+        }
         highlighted.onclick = removeClickedToken;
         highlighted.appendChild(child);
         textElement.appendChild(highlighted);
