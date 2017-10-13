@@ -1,14 +1,14 @@
 {
-  "name": "sandbox17",
+  "name": "fun-test-1",
   "version": "1.0.0",
-  "description": "",
+  "description": "A random test I saw on reddit",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Me",
-  "license": "UNLICENSED",
+  "author": "Kirill Shestakov",
+  "license": "MIT",
   "dependencies": {
     "body-parser": "^1.18.2",
     "express": "^4.16.2",
