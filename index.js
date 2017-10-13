@@ -4,7 +4,7 @@ var port = 3000;
 var tokenPosition = null;
 var text = require('./text');
 var bodyParser = require('body-parser');
-var validateTokenSelection = require('./static/rules');
+var validateTokenSelection = require('./validateTokenSelection');
 
 var app = express();
 
