@@ -12,4 +12,4 @@ try {
     getBoundaryPattern: getBoundaryPattern
   };
 }
-catch(oops) { }
+catch(nope) { }
