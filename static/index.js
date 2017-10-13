@@ -1,9 +1,9 @@
-var text, tokenPosition;
+var text, tokenPositions;
 var textElement;
 
 document.addEventListener('DOMContentLoaded', function() {
-  getText().then(updateText);
-  getTokenPosition().then(updateTokenPosition);
+  getText();
+  getTokenPositions();
   textElement = document.getElementById('text');
   textElement.addEventListener('mouseup', updateSelection);
 });
@@ -15,46 +15,42 @@ function updateText(newText) {
   }
 }
 
-function updateTokenPosition(newTokenPosition) {
-  if (tokenPosition !== newTokenPosition) {
-    tokenPosition = newTokenPosition;
-    refreshData();
-  }
+function updateTokenPositions(newTokenPositions) {
+  tokenPositions = newTokenPositions;
+  refreshData();
 }
 
-var tokenBoundary = /([\s,.])/;
-
 function refreshData() {
-  if (text !== undefined && tokenPosition !== undefined) {
+  if (text !== undefined && tokenPositions !== undefined) {
     while(textElement.firstChild) {
       textElement.removeChild(textElement.firstChild);
     }
-    if (tokenPosition !== null) {
-      var strBefore = text.substring(0, tokenPosition);
-      var strAfter = text.substring(tokenPosition);
-      var arrBefore = strBefore.split(tokenBoundary);
-      var arrAfter = strAfter.split(tokenBoundary);
-      textElement.appendChild(document.createTextNode(arrBefore.reduce((val, curVal, i) => {
-        if (arrBefore.length-1 !== i) {
-          val += curVal;
-        }
-        return val;
-      }, '')));
-      var highlighted = document.createElement('span');
-      highlighted.className = 'highlighted';
-      highlighted.appendChild(document.createTextNode(arrBefore[arrBefore.length-1] + arrAfter[0]));
-      textElement.appendChild(highlighted);
-      textElement.appendChild(document.createTextNode(arrAfter.reduce((val, curVal, i) => {
-        if (0 !== i) {
-          val += curVal;
-        }
-        return val;
-      }, '')));
-    }
-    else {
-      textElement.appendChild(document.createTextNode(text));
-    }
+    var splitText = tokenize(text);
+    var count = 0;
+    splitText.forEach((fragment) => {
+      var child = document.createTextNode(fragment);
+      var isBoundary = getBoundaryPattern().test(fragment);
+      if (isBoundary || !~tokenPositions.indexOf(count)) {
+        textElement.appendChild(child);
+      }
+      else {
+        var highlighted = document.createElement('span');
+        highlighted.className = 'highlighted';
+        highlighted.setAttribute('data-tokenPosition', count);
+        highlighted.onclick = removeClickedToken;
+        highlighted.appendChild(child);
+        textElement.appendChild(highlighted);
+      }
+      if (!isBoundary) {
+        count++;
+      }
+    });
   }
+}
+
+function removeClickedToken(e) {
+  var tokenPosition = Number(e.currentTarget.getAttribute('data-tokenPosition'));
+  removeTokenPosition(tokenPosition);
 }
 
 function updateSelection() {
@@ -70,18 +66,10 @@ function updateSelection() {
     var childReached = false;
     var desiredTokenPosition = Array
       .from(selection.anchorNode.parentNode.childNodes)
-      .reduce((len, child) => {
-        if (!childReached && child !== selection.anchorNode) {
-          len += child.textContent.length;
-        }
-        else {
-          childReached = true;
-        }
-        return len;
-      }, 0)
+      .filter((child) => !getBoundaryPattern().test(child.textContent))
+      .indexOf(selection.anchorNode)
     ;
-    desiredTokenPosition += selection.anchorOffset;
-    setTokenPosition(desiredTokenPosition);
+    addTokenPosition(desiredTokenPosition);
   }
 }
 
@@ -89,18 +77,20 @@ function getText() {
   return fetch('/api/getText')
     .then((res) => res.json())
     .then((res) => res.text)
+    .then(updateText)
   ;
 }
 
-function getTokenPosition() {
-  return fetch('/api/getTokenPosition')
+function getTokenPositions() {
+  return fetch('/api/getTokenPositions')
     .then((res) => res.json())
-    .then((res) => res.tokenPosition)
+    .then((res) => res.tokenPositions)
+    .then(updateTokenPositions)
   ;
 }
 
-function setTokenPosition(desiredTokenPosition) {
-  return fetch('/api/setTokenPosition', {
+function addTokenPosition(desiredTokenPosition) {
+  return fetch('/api/addTokenPosition', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -110,6 +100,21 @@ function setTokenPosition(desiredTokenPosition) {
     })
   })
   .then((res) => res.json())
-  .then((res) => res.tokenPosition)
-  .then(updateTokenPosition);
+  .then((res) => res.tokenPositions)
+  .then(updateTokenPositions);
+}
+
+function removeTokenPosition(desiredTokenPosition) {
+  return fetch('/api/removeTokenPosition', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      tokenPosition: desiredTokenPosition
+    })
+  })
+  .then((res) => res.json())
+  .then((res) => res.tokenPositions)
+  .then(updateTokenPositions);
 }
