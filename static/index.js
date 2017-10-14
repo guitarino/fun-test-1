@@ -69,7 +69,7 @@ function updateSelection() {
     selection.anchorNode.parentNode === textElement &&
     (
       selection.anchorOffset !== selection.focusOffset ||
-      selection.anchorNode !== selection.anchorNode
+      selection.anchorNode !== selection.focusNode
     )
   ) {
     var childReached = false;
